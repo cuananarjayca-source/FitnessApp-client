@@ -3,8 +3,8 @@
     <div class="navbar-inner">
       
       <div class="nav-left">
-        <RouterLink to="/">
-          <span class="brand-pulse">Pulse</span><span class="brand-flow">Flow</span>
+        <RouterLink to="/" class="brand-identity">
+          <span class="brand-pulse">Pulse</span> <span class="brand-flow">Flow</span>
         </RouterLink>
       </div>
 
@@ -62,7 +62,6 @@
           </ul>
         </div>
       </div>
-
     </div>
   </nav>
 </template>
@@ -185,12 +184,8 @@ watch(
   width: 100%;
   z-index: 1000;
   padding: 15px 0;
-  
-  /* Initial State: Fully transparent to show pastel gradient behind it */
   background-color: transparent;
   border-bottom: 1px solid transparent;
-  
-  /* Smooth hardware transition interpolation */
   transition: 
     background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     border-color 0.4s ease,
@@ -217,24 +212,29 @@ watch(
 }
 
 /* --- Left: Brand Identity Typography --- */
-.brand-identity {
-  text-decoration: none;
-  font-family: system-ui, -apple-system, sans-serif;
+.nav-left {
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 1.45rem;
   letter-spacing: -0.5px;
   display: inline-flex;
   align-items: center;
 }
 
+.brand-identity {
+  text-decoration: none !important;
+}
+
 .brand-pulse {
   color: #ffffff;
   font-weight: 800; /* Bold White */
+
 }
 
 .brand-flow {
   color: #38bdf8; /* Solid Light Blue */
   font-weight: 500;
   margin-left: 1px;
+
 }
 
 /* --- Center: Navigation Links --- */

@@ -42,7 +42,7 @@ async function handleLogin() {
 
   isLoading.value = true;
 
-  try {
+ try {
     const response = await api.post(`/users/login`, {
       email: email.value,
       password: password.value,
@@ -50,16 +50,18 @@ async function handleLogin() {
 
     if (response.data) {
       notyf.success("Login Successful");
-      localStorage.setItem("token", response.data.access);
+      const token = response.data.access;
       
-      // Await user details configuration safely
-      await getUserDetails(response.data.access);
+      // Set token in BOTH localStorage and Pinia store immediately
+      localStorage.setItem("token", token);
+      globalStore.user = { ...globalStore.user, token };  // Or however your store setter works
+      
+      // Then fetch full user details
+      await getUserDetails(token);
       
       email.value = "";
       password.value = "";
       router.push({ path: '/' });
-    } else {
-      notyf.error("Login Failed. Please contact administrator.");
     }
   } catch (e) {
     const status = e.response?.status;
@@ -74,9 +76,7 @@ async function handleLogin() {
 }
 
 onBeforeMount(() => {
-  if (localStorage.getItem("token")) {
-    router.push({ path: '/' });
-  }
+    if (globalStore.user?.token) router.push("/");
 });
 </script>
 

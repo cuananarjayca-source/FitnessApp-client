@@ -173,14 +173,6 @@
             >
           </div>
 
-          <div class="mb-4">
-            <label for="modalSchedule" class="form-label text-teal-muted small fw-semibold">STATUS TRACKER</label>
-            <select v-model="editForm.schedule" id="modalSchedule" class="form-select form-dark-input">
-              <option value="pending">Pending</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
-
           <div class="d-flex gap-2 justify-content-end border-top border-secondary pt-3">
             <button type="button" @click="closeEditModal" class="btn btn-outline-secondary px-4 rounded-3 btn-sm">Cancel</button>
             <button type="submit" :disabled="isUpdating" class="btn btn-teal px-4 rounded-3 fw-semibold btn-sm">
@@ -199,14 +191,14 @@ import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useGlobalStore } from '../stores/global.js';
 
-// --- Initialization Variables ---
+
 const router = useRouter();
 const globalStore = useGlobalStore();
 
-// Safely destructure workouts list preserving reactive state tracking
+
 const { workouts } = storeToRefs(globalStore);
 
-// --- Modal System Reactive State Objects ---
+
 const showModal = ref(false);
 const isUpdating = ref(false);
 const editForm = ref({ 
@@ -216,35 +208,35 @@ const editForm = ref({
   schedule: '' 
 });
 
-// Fetch routine collections from backend API database on initial layout render mount
+
 onMounted(async () => {
   await globalStore.fetchWorkouts();
 });
 
-// Programmatic route navigation method to direct user to creation board form view
+
 const goToAddWorkout = () => {
   router.push({ name: 'AddWorkouts' });
 };
 
-// --- Modal Operation Functional Methods ---
 
-// 1. Intercept item details click, assign data to model fields, reveal backdrop wrapper
+
+
 const openEditModal = (targetWorkout) => {
   editForm.value = {
     id: targetWorkout.id,
     name: targetWorkout.name,
-    interval: targetWorkout.interval, // Preloads current duration text context
-    schedule: targetWorkout.schedule   // Preloads status value context (pending/completed)
+    interval: targetWorkout.interval, 
+    schedule: targetWorkout.schedule   
   };
   showModal.value = true;
 };
 
-// 2. Shut down modal component interface overlays
+
 const closeEditModal = () => {
   showModal.value = false;
 };
 
-// 3. Dispatch form variations out to Pinia API store update mutations
+
 const submitModalUpdate = async () => {
   if (isUpdating.value) return;
   isUpdating.value = true;
@@ -257,7 +249,7 @@ const submitModalUpdate = async () => {
   }
 };
 
-// Quick-toggle action method to change status flag properties instantly to 'completed'
+
 const completeWorkout = async (id) => {
   const item = workouts.value.find(w => w.id === id);
   if (item) {
@@ -270,7 +262,7 @@ const completeWorkout = async (id) => {
   }
 };
 
-// Delete routine action dispatcher communicating tracking ID down to database endpoints
+
 const deleteWorkout = async (id) => {
   if (confirm("Are you sure you want to remove this workout?")) {
     if (typeof globalStore.deleteWorkoutItem === 'function') {
