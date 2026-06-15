@@ -187,15 +187,22 @@ onBeforeMount(() => {
         </div>
       </div>
       
-      <div class="col-12 col-md-5 col-lg-6 d-none d-md-block"></div>
-    </div>
+    <div class="col-12 col-md-7 col-lg-6 text-center text-white ps-md-5">
+        <p class="sub-title text-uppercase tracking-wider">Elevate Your Motion</p>
+        <h1 class="main-title font-black text-uppercase">Track. Train.</h1>
+        <p class="promo-text font-bold mb-0">
+          Workout with your 
+          <span class="brand-highlight text-uppercase">Fitmon</span>
+        </p>
+        </div>
+      </div>
   </div>
 </template>
 
 <style scoped>
 /* Container & Background configuration */
 .register-container {
-  background: url('@/assets/login-background.png') no-repeat center center fixed;
+  background: url('@/assets/register-background.png') no-repeat center center fixed;
   background-size: cover;
   overflow-x: hidden;
 }
@@ -273,7 +280,7 @@ onBeforeMount(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding-left: 5px;
+  padding-left: 25px;
 }
 
 .custom-checkbox {
@@ -348,5 +355,39 @@ onBeforeMount(() => {
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.5);
   line-height: 1.4;
+}
+
+/* Right Column: Hero Section Styles */
+.sub-title {
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.main-title {
+  font-size: calc(2.8rem + 3vw);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -1px;
+  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.promo-text {
+  font-size: calc(1.5rem + 1.2vw);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.brand-highlight {
+  display: block;
+  font-size: calc(2.2rem + 2.5vw);
+  font-weight: 900;
+  background: linear-gradient(135deg, #00d4ff 0%, #4a90e2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-top: 0.25rem;
 }
 </style>
