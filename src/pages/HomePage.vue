@@ -1,4 +1,5 @@
 <script setup>
+  import HeroComponent from '../components/HeroComponent.vue';
 
 </script>
 
@@ -12,8 +13,7 @@
 
     <!-- Main Content Layout Holder (Rest of your sections remain below) -->
     <main class="relative z-10">
-        <TourPlanComponent />
-        <AboutComponent />
+
     </main>
   </div>
 </template>

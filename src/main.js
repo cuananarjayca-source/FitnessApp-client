@@ -12,6 +12,8 @@ import App from './App.vue'
 import HomePage from './pages/HomePage.vue';
 import RegisterPage from './pages/RegisterPage.vue';
 import LoginPage from './pages/LoginPage.vue';
+import WorkoutsPage from './pages/WorkoutsPage.vue'
+import AddWorkoutsPage from './pages/AddWorkoutsPage.vue';
 
 // ROUTES
 import { createApp } from 'vue';
@@ -36,6 +38,16 @@ const router = createRouter({
             path: '/login',
             name: 'Login',
             component: LoginPage
+        },
+        {
+            path: '/workouts',
+            name: 'Workouts',
+            component: WorkoutsPage
+        },
+        {
+            path: '/addworkouts',
+            name: 'AddWorkouts',
+            component: AddWorkoutsPage
         }
     ]
 });

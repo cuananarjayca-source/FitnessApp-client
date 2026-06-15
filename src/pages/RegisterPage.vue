@@ -1,14 +1,17 @@
 <script setup>
-import { watch, ref, onBeforeMount } from 'vue';
+import { watch, ref, onBeforeMount, reactive } from 'vue';
 import { Notyf } from 'notyf';
 import { useRouter } from 'vue-router';
 import api from '../api.js';
 
-const firstName = ref("");
-const lastName = ref("");
-const email = ref("");
-const password = ref("");
-const confirmPassword = ref("");
+// 1. Group inputs into a reactive object to match your template's formData bindings
+const formData = reactive({
+  name: "",
+  email: "",
+  password: "",
+  confirmPassword: ""
+});
+
 const isEnabled = ref(false);
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
@@ -18,35 +21,39 @@ const termsAccepted = ref(false);
 const notyf = new Notyf();
 const router = useRouter();
 
-
-watch([firstName, lastName, email, password, confirmPassword, termsAccepted], (currentValue) => {
-    const [fn, ln, em, pw, cp, terms] = currentValue;
-    const allFilled = [fn, ln, em, pw, cp].every(v => v !== "");
+// 2. Update the watcher to track the reactive object properties safely
+watch(
+  () => [formData.name, formData.email, formData.password, formData.confirmPassword, termsAccepted.value], 
+  (currentValue) => {
+    const [n, em, pw, cp, terms] = currentValue;
+    const allFilled = [n, em, pw, cp].every(v => v.trim() !== "");
     const passwordsMatch = pw === cp;
     isEnabled.value = allFilled && passwordsMatch && terms;
-});
+  }
+);
 
-async function handleSubmit() {
+// Renamed function to match the form submission hook in the template
+async function handleRegister() {
     if (!isEnabled.value || isLoading.value) return;
 
     isLoading.value = true;
 
     try {
-        const response = await api.post('users/register', {
-            firstName: firstName.value,
-            lastName: lastName.value,
-            email: email.value,
-            password: password.value
+        // 3. Send payload matching your backend Mongoose Schema requirements
+        const response = await api.post('/users/register', {
+            name: formData.name, 
+            email: formData.email,
+            password: formData.password
         });
 
         if (response.status === 201) {
-            notyf.success(response.data.message);
+            notyf.success(response.data.message || "Registration Successful!");
 
-            firstName.value = "";
-            lastName.value = "";
-            email.value = "";
-            password.value = "";
-            confirmPassword.value = "";
+            // Clear form fields inside the reactive object
+            formData.name = "";
+            formData.email = "";
+            formData.password = "";
+            formData.confirmPassword = "";
             termsAccepted.value = false;
 
             router.push({ path: '/login' });
@@ -56,7 +63,7 @@ async function handleSubmit() {
     } catch (e) {
         const status = e.response?.status;
         if ([400, 401, 404, 409].includes(status)) {
-            notyf.error(e.response.data.error);
+            notyf.error(e.response.data.error || "Validation error occurred.");
         } else {
             notyf.error("Registration Failed. Please contact administrator.");
         }
@@ -71,147 +78,275 @@ function togglePass(field) {
 }
 
 onBeforeMount(() => {
+    // If user is already authenticated, redirect them out of the register loop
     if (localStorage.getItem("token")) {
-        router.push({ path: '/' });
+        router.push({ path: '/dashboard' }); 
     }
 });
 </script>
 
 <template>
-    <div class="auth-bg">
-        <div class="container">
-            <div class="row align-items-center min-vh-100 py-5">
-
-                <!-- Left panel -->
-                <div class="col-lg-6 d-none d-lg-flex flex-column justify-content-center pe-5">
-                    <p class="auth-eyebrow">Flight 606 · Luxury Redefined</p>
-                    <h1 class="auth-headline">Experience the<br><em>Art of Travel</em></h1>
-                    <p class="auth-sub">Crafted for the <span class="gold">Modern Traveler</span></p>
-                    <blockquote class="auth-quote">
-                        <p>"Flight606 is the only Airline where the journey becomes your destination"</p>
-                        <footer>— Manny Paksiw</footer>
-                    </blockquote>
-                </div>
-
-                <!-- Auth card -->
-                <div class="col-lg-6">
-                    <div class="auth-card">
-                        <p class="a-tag">Welcome to Flight606</p>
-                        <h2 class="a-title">Create <span class="gold">account</span></h2>
-
-                        <form @submit.prevent="handleSubmit" novalidate>
-                            <div class="row g-3">
-
-                                <div class="col-6">
-                                    <label class="f-label">First Name</label>
-                                    <input
-                                        v-model="firstName"
-                                        type="text"
-                                        class="f-input"
-                                        placeholder="First name"
-                                    />
-                                    <p v-if="firstName === '' && isLoading" class="err-msg">First name is required.</p>
-                                </div>
-
-                                <div class="col-6">
-                                    <label class="f-label">Last Name</label>
-                                    <input
-                                        v-model="lastName"
-                                        type="text"
-                                        class="f-input"
-                                        placeholder="Last name"
-                                    />
-                                    <p v-if="lastName === '' && isLoading" class="err-msg">Last name is required.</p>
-                                </div>
-
-                                <div class="col-6">
-                                    <label class="f-label">E-Mail</label>
-                                    <input
-                                        v-model="email"
-                                        type="email"
-                                        class="f-input"
-                                        placeholder="your.email@mail.com"
-                                    />
-                                </div>
-
-                                <div class="col-6">
-                                    <label class="f-label">Date of Birth</label>
-                                    <input type="date" class="f-input" />
-                                </div>
-
-                                <div class="col-6">
-                                    <label class="f-label">Password</label>
-                                    <div class="input-wrap">
-                                        <input
-                                            v-model="password"
-                                            :type="showPassword ? 'text' : 'password'"
-                                            class="f-input"
-                                            placeholder="Password"
-                                        />
-                                        <span class="input-eye" @click="togglePass('password')">
-                                            <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-                                        </span>
-                                    </div>
-                                    <p v-if="password.length > 0 && password.length < 8" class="err-msg">
-                                        Min. 8 characters required.
-                                    </p>
-                                </div>
-
-                                <div class="col-6">
-                                    <label class="f-label">Confirm Password</label>
-                                    <div class="input-wrap">
-                                        <input
-                                            v-model="confirmPassword"
-                                            :type="showConfirmPassword ? 'text' : 'password'"
-                                            class="f-input"
-                                            placeholder="••••••••••"
-                                        />
-                                        <span class="input-eye" @click="togglePass('confirm')">
-                                            <i :class="showConfirmPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-                                        </span>
-                                    </div>
-                                    <p v-if="confirmPassword.length > 0 && password !== confirmPassword" class="err-msg">
-                                        Passwords do not match.
-                                    </p>
-                                </div>
-
-                            </div>
-
-                            <label class="r-lbl mt-3">
-                                <input v-model="termsAccepted" type="checkbox" />
-                                <span>
-                                    I agree to all the
-                                    <a href="#" class="gold-link">Terms</a> and
-                                    <a href="#" class="gold-link">Privacy Policy</a>
-                                </span>
-                            </label>
-
-                            <button
-                                type="submit"
-                                class="btn-gold-full mt-3"
-                                :disabled="!isEnabled"
-                                :style="{ opacity: isEnabled ? 1 : 0.5, cursor: isEnabled ? 'pointer' : 'not-allowed' }"
-                            >
-                                {{ isLoading ? 'Creating Account…' : 'Create Account' }}
-                            </button>
-
-                            <button type="button" class="oauth-btn">
-                                <img src="https://www.google.com/favicon.ico" width="14" alt="G" /> Continue with Google
-                            </button>
-                            <button type="button" class="oauth-btn">
-                                <i class="bi bi-apple"></i> Continue with Apple
-                            </button>
-
-                        </form>
-
-                        <p class="switch-link">
-                            Already have an account?
-                            <router-link to="/login" class="gold-link">Log In</router-link>
-                        </p>
-                    </div>
-                </div>
-
+  <div class="container-fluid register-container">
+    <div class="row align-items-center min-vh-100">
+      <div class="col-12 col-sm-10 col-md-6 col-lg-5 col-xl-4 offset-sm-1 offset-md-1">
+        <div class="register-card">
+          <h2 class="text-center mb-4">
+            Join <span class="highlight-pulse">PULSE</span>
+          </h2>
+          
+          <form @submit.prevent="handleRegister">
+            <div class="form-group-custom mb-3">
+              <div class="input-icon-wrapper">
+                <span class="input-icon">👤</span>
+                <input 
+                  v-model="formData.name"
+                  type="text" 
+                  class="form-control-custom" 
+                  placeholder="Full Name" 
+                  required 
+                />
+              </div>
             </div>
+
+            <div class="form-group-custom mb-3">
+              <div class="input-icon-wrapper">
+                <span class="input-icon">✉️</span>
+                <input 
+                  v-model="formData.email"
+                  type="email" 
+                  class="form-control-custom" 
+                  placeholder="Email Address" 
+                  required 
+                />
+              </div>
+            </div>
+            
+            <div class="form-group-custom mb-3">
+              <div class="input-icon-wrapper">
+                <span class="input-icon">🔒</span>
+                <input 
+                  v-model="formData.password"
+                  :type="showPassword ? 'text' : 'password'" 
+                  class="form-control-custom" 
+                  placeholder="Create Password" 
+                  required 
+                />
+                <span class="password-toggle-icon" @click="togglePass('password')">
+                  {{ showPassword ? '🙈' : '👁️' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="form-group-custom mb-3">
+              <div class="input-icon-wrapper">
+                <span class="input-icon">🛡️</span>
+                <input 
+                  v-model="formData.confirmPassword"
+                  :type="showConfirmPassword ? 'text' : 'password'" 
+                  class="form-control-custom" 
+                  placeholder="Confirm Password" 
+                  required 
+                />
+                <span class="password-toggle-icon" @click="togglePass('confirmConfirm')">
+                  {{ showConfirmPassword ? '🙈' : '👁️' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="form-check mb-4 custom-checkbox-wrapper">
+              <input 
+                v-model="termsAccepted"
+                type="checkbox" 
+                class="form-check-input custom-checkbox" 
+                id="termsCheck" 
+                required 
+              />
+              <label class="form-check-label checkbox-label" for="termsCheck">
+                I accept the <a href="#" class="terms-link">Terms & Conditions</a>
+              </label>
+            </div>
+            
+            <button 
+              type="submit" 
+              class="btn-register w-100 mb-3"
+              :disabled="!isEnabled || isLoading"
+            >
+              {{ isLoading ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT' }}
+            </button>
+          </form>
+          
+          <div class="text-center">
+            <p class="login-cta">
+                Already have an account?
+                <RouterLink to="/login" class="login-link">Login here</RouterLink>
+            </p>
+            <p class="footer-note">
+              Start your dynamic training journey and elevate your motion today.
+            </p>
+          </div>
         </div>
+      </div>
+      
+      <div class="col-12 col-md-5 col-lg-6 d-none d-md-block"></div>
     </div>
+  </div>
 </template>
+
+<style scoped>
+/* Container & Background configuration */
+.register-container {
+  background: url('@/assets/login-background.png') no-repeat center center fixed;
+  background-size: cover;
+  overflow-x: hidden;
+}
+
+/* Identical UI Glassmorphism Spec for cohesive identity */
+.register-card {
+  background: rgba(45, 45, 60, 0.65);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 2px solid rgba(0, 212, 255, 0.2);
+  border-radius: 16px;
+  padding: 40px 30px;
+  color: #ffffff;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Pulse branding color treatment */
+.highlight-pulse {
+  color: #00d4ff;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* Custom Element Icons & Form controls */
+.input-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  color: #00d4ff;
+  font-size: 1.1rem;
+}
+
+.password-toggle-icon {
+  position: absolute;
+  right: 15px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 1.1rem;
+  transition: opacity 0.2s ease;
+}
+
+.password-toggle-icon:hover {
+  opacity: 0.8;
+}
+
+.form-control-custom {
+  width: 100%;
+  padding: 12px 40px 12px 45px; /* Right padding adjusted for toggle icon */
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control-custom:focus {
+  outline: none;
+  border-color: #00d4ff;
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.form-control-custom::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Terms and Conditions Checkbox styling */
+.custom-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 5px;
+}
+
+.custom-checkbox {
+  cursor: pointer;
+  accent-color: #00d4ff;
+  width: 16px;
+  height: 16px;
+}
+
+.checkbox-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.terms-link {
+  color: #00d4ff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.terms-link:hover {
+  text-decoration: underline;
+}
+
+/* Action button gradient matching brand scheme */
+.btn-register {
+  background: linear-gradient(90deg, #00d4ff 0%, #4a90e2 100%);
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  padding: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.btn-register:hover:not(:disabled) {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+.btn-register:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn-register:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Link treatments */
+.login-cta {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.login-link {
+  color: #00d4ff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.login-link:hover {
+  text-decoration: underline;
+}
+
+.footer-note {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.4;
+}
+</style>

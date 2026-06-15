@@ -3,8 +3,10 @@ import { watch, ref, onBeforeMount } from 'vue';
 import { Notyf } from 'notyf';
 import { useRouter } from 'vue-router';
 import api from '../api.js';
+import { useGlobalStore } from '../stores/global.js';
 
 const router = useRouter();
+const globalStore = useGlobalStore();
 
 const email = ref("");
 const password = ref("");
@@ -14,13 +16,25 @@ const isLoading = ref(false);
 
 const notyf = new Notyf();
 
+// Monitors both fields to enable the Sign In button only when both have content
 watch([email, password], (currentValue) => {
   isEnabled.value = currentValue.every(input => input !== "");
 });
 
-async function handleSubmit() {
+// Await user details configuration safely via the global store
+async function getUserDetails(token) {
+  try {
+    await globalStore.getUserDetails(token);
+  } catch (error) {
+    console.error("Failed to fetch user details:", error);
+  }
+}
+
+// Renamed to match the template form submission handler
+async function handleLogin() {
   if (isLoading.value) return;
 
+  // Strict email regex validation matching your backend requirements
   if (!email.value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
     notyf.error("Please enter a valid email address.");
     return;
@@ -37,7 +51,10 @@ async function handleSubmit() {
     if (response.data) {
       notyf.success("Login Successful");
       localStorage.setItem("token", response.data.access);
-      getUserDetails(response.data.access);
+      
+      // Await user details configuration safely
+      await getUserDetails(response.data.access);
+      
       email.value = "";
       password.value = "";
       router.push({ path: '/' });
@@ -47,7 +64,7 @@ async function handleSubmit() {
   } catch (e) {
     const status = e.response?.status;
     if (status === 404 || status === 401 || status === 400) {
-      notyf.error(e.response.data.error);
+      notyf.error(e.response.data.error || "Invalid email or password.");
     } else {
       notyf.error("Login Failed. Please contact administrator.");
     }
@@ -58,7 +75,7 @@ async function handleSubmit() {
 
 onBeforeMount(() => {
   if (localStorage.getItem("token")) {
-    router.push({ path: '/home' });
+    router.push({ path: '/' });
   }
 });
 </script>
@@ -77,9 +94,10 @@ onBeforeMount(() => {
               <div class="input-icon-wrapper">
                 <span class="input-icon">👤</span>
                 <input 
-                  type="text" 
+                  v-model="email"
+                  type="email" 
                   class="form-control-custom" 
-                  placeholder="Username or Email" 
+                  placeholder="Enter your Email" 
                   required 
                 />
               </div>
@@ -89,6 +107,7 @@ onBeforeMount(() => {
               <div class="input-icon-wrapper">
                 <span class="input-icon">🔒</span>
                 <input 
+                  v-model="password"
                   type="password" 
                   class="form-control-custom" 
                   placeholder="Enter your Password" 
@@ -97,15 +116,20 @@ onBeforeMount(() => {
               </div>
             </div>
             
-            <button type="submit" class="btn-signin w-100 mb-3">
-              SIGN IN
+            <button 
+              type="submit" 
+              class="btn-signin w-100 mb-3"
+              :disabled="!isEnabled || isLoading"
+            >
+              {{ isLoading ? 'SIGNING IN...' : 'SIGN IN' }}
             </button>
           </form>
           
           <div class="text-center">
             <a href="#" class="forgot-password-link d-block mb-3">Forgot Password</a>
-            <p class="register-text mb-4">
-              Don't have an account yet? Register <a href="#" class="register-link">here</a>
+            <p class="register-cta mb-4">
+                Don't have an account yet? Register
+                <RouterLink to="/register" class="register-link">here</RouterLink>
             </p>
             <p class="footer-note">
               We provide the ultimate training environment designed for real results.
@@ -195,13 +219,19 @@ onBeforeMount(() => {
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-.btn-signin:hover {
+.btn-signin:hover:not(:disabled) {
   transform: translateY(-1px);
   opacity: 0.95;
 }
 
-.btn-signin:active {
+.btn-signin:active:not(:disabled) {
   transform: translateY(1px);
+}
+
+.btn-signin:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Contextual Links & Typography */
