@@ -7,64 +7,64 @@
 </script>
 
 <template>
-	<nav class="navbar navbar-expand-lg fixed-top" id="mainNav">
-        <div class="container-fluid nav-inner">
-        <a class="navbar-brand nav-logo" href="#" onclick="showPage('home'); return false;">
-            <span class="logo-mark">
-            <i class="bi bi-airplane-fill"></i>
-            </span>
-            Flight<span class="gold">606</span>
-        </a>
-
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-            <span class="toggler-icon"></span>
-            <span class="toggler-icon"></span>
-            <span class="toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav mx-auto gap-lg-2">
-            <li class="nav-item">
-                <a class="nav-link active" id="nl-home" href="#" onclick="goNav(this,'home'); return false;">Home</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="nl-book" href="#" onclick="goNav(this,'search-flights'); return false;">Flights</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="nl-tour" href="#" onclick="goNav(this,'home','tours'); return false;">Destinations</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="nl-about" href="#" onclick="goNav(this,'home','about'); return false;">Experience</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="nl-contact" href="#" onclick="goNav(this,'contact'); return false;">Contact</a>
-            </li>
-            </ul>
-
-            <div class="nav-actions d-flex align-items-center gap-2" id="nav-logged-out">
-            <a class="btn-ghost" href="#" onclick="showPage('login'); return false;">Login</a>
-            <a class="btn-gold" href="#" onclick="showPage('signup'); return false;">Sign Up</a>
-            </div>
-
-            <div class="nav-actions d-flex align-items-center gap-2 ms-3" id="nav-logged-in" style="display:none!important">
-            <div class="profile-dropdown" id="profileDropdown">
-                <button class="profile-trigger" onclick="toggleProfileMenu()">
-                <i class="bi bi-person-circle"></i>
-                <span class="profile-name-label">My Account</span>
-                <i class="bi bi-chevron-down small"></i>
-                </button>
-                <div class="profile-menu" id="profileMenu">
-                <a href="#" onclick="showPage('profile'); closeProfileMenu(); return false;"><i class="bi bi-person"></i> Personal Details</a>
-                <a href="#" onclick="showPage('profile'); closeProfileMenu(); return false;"><i class="bi bi-credit-card"></i> Payment Details</a>
-                <a href="#" onclick="showPage('profile'); closeProfileMenu(); return false;"><i class="bi bi-wallet2"></i> Wallet</a>
-                <a href="#" onclick="showPage('profile'); closeProfileMenu(); return false;"><i class="bi bi-clock-history"></i> Payment History</a>
-                <div class="pm-sep"></div>
-                <a href="#" class="logout-link" onclick="doLogout(); return false;"><i class="bi bi-box-arrow-right"></i> Log out</a>
-                </div>
-            </div>
-            </div>
-        </div>
-        </div>
-    </nav>
-
+  <nav class="navbar">
+    <div class="logo">Pulse Flow</div>
+    <ul class="nav-links">
+      <li><a href="#">Features</a></li>
+      <li><a href="#">Workouts</a></li>
+      <li><a href="#">Community</a></li>
+      <li><a href="#">Pricing</a></li>
+    </ul>
+    <div class="auth-buttons">
+      <button class="register">Register</button>
+      <button class="login">Login</button>
+    </div>
+  </nav>
 </template>
+
+<style scoped>
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 5%;
+  /* The transparent effect */
+  background: rgba(255, 255, 255, 0.1); 
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 1000;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: white;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+}
+
+.auth-buttons button {
+  background: transparent;
+  border: 1px solid white;
+  color: white;
+  padding: 8px 16px;
+  margin-left: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+</style>

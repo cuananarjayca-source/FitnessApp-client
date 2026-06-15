@@ -1,7 +1,5 @@
 <script setup>
-	import HeroComponent from '../components/HeroComponent.vue';
-    import TourPlanComponent from '../components/TourPlanComponent.vue';
-    import AboutComponent from '../components/AboutComponent.vue';
+
 </script>
 
 <template>
